@@ -1,0 +1,12 @@
+---
+title: 'Get Shifts'
+description: 'Retrieve shift records using timestamp-based pagination'
+openapi: 'GET /api/v1/shifts'
+---
+
+Shifts are paginated using Unix timestamps (float) as cursors for precise temporal ordering.
+
+### Cursor Format
+- Type: Unix Timestamp (float)
+- Example: `1736302471.07677`
+- Ordering: Descending (newest first)

@@ -1,0 +1,77 @@
+---
+title: 'Rate Limiting Architecture'
+description: 'Technical specification of throughput control system'
+---
+
+## Implementation Architecture
+
+The API implements a distributed token bucket algorithm for precise throughput control. Each IP address receives an isolated bucket with the following constraints:
+
+- Bucket Capacity: 500 tokens
+- Refill Rate: 500 tokens/second
+- Time Resolution: Millisecond precision
+
+## Rate Control Headers
+
+The system implements RFC 6585 compliant rate control headers:
+
+| Header | Type | Description |
+|--------|------|-------------|
+| `X-RateLimit-Limit` | Integer | Bucket capacity |
+| `X-RateLimit-Remaining` | Integer | Current token count |
+| `X-RateLimit-Reset` | Unix Timestamp | Next refill timestamp |
+
+Implementation example:
+```http
+X-RateLimit-Limit: 500
+X-RateLimit-Remaining: 499
+X-RateLimit-Reset: 1702544876
+```
+
+## Throughput Control Response
+
+When bucket capacity is exceeded:
+
+```json
+{
+  "status": 429,
+  "message": "Rate limit exceeded: throughput constraint violation",
+  "error_code": "RATE_LIMIT_EXCEEDED"
+}
+```
+
+The response includes a `Retry-After` header indicating millisecond-precision backoff duration.
+
+## Implementation Patterns
+
+### Token Monitoring
+Implement continuous token monitoring:
+
+```typescript
+function monitorRateLimit(response: Response): void {
+  const remaining = parseInt(response.headers.get('X-RateLimit-Remaining'));
+  const resetTime = parseInt(response.headers.get('X-RateLimit-Reset'));
+  const currentTime = Math.floor(Date.now() / 1000);
+  
+  console.log(`Tokens remaining: ${remaining}`);
+  console.log(`Reset in: ${resetTime - currentTime}s`);
+}
+```
+
+### Backoff Implementation
+Implement exponential backoff with jitter:
+
+```typescript
+async function backoffStrategy(retryCount: number): Promise<void> {
+  const base = 100; // Base delay in ms
+  const maxDelay = 10000; // Maximum delay in ms
+  const jitter = Math.random() * 100;
+  
+  const delay = Math.min(
+    maxDelay,
+    Math.pow(2, retryCount) * base + jitter
+  );
+  
+  await new Promise(resolve => setTimeout(resolve, delay));
+}
+```

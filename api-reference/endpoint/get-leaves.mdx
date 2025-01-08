@@ -1,0 +1,12 @@
+---
+title: 'Get Leaves'
+description: 'Retrieve leave records using epoch timestamp pagination'
+openapi: 'GET /api/v1/leaves'
+---
+
+Leaves are paginated using Unix epoch timestamps for chronological ordering.
+
+### Cursor Format
+- Type: Unix Epoch (int64)
+- Example: `1702544876`
+- Ordering: Descending (newest first)

@@ -1,0 +1,12 @@
+---
+title: 'Get Moderations'
+description: 'Retrieve moderation records using Discord snowflake pagination'
+openapi: 'GET /api/v1/moderations'
+---
+
+Moderations are paginated using Discord snowflakes for guaranteed sequential ordering.
+
+### Cursor Format
+- Type: Discord Snowflake (int64)
+- Example: `1090340521350131742`
+- Ordering: Descending (newest first)

@@ -1,33 +1,101 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: 'ERM Open API'
+description: 'Technical specification for the ERM Open API'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+The ERM API implements uses RESTful principles to provide consistent, basic data about servers data that you can integrate with your services.
 
-## Welcome
+## Authentication Protocol
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+The API implements stateless authentication using cryptographically secure tokens.
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+### Token Generation Protocol
 
-## Authentication
+Initialize an authentication context by providing a guild identifier:
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+```bash
+POST /api/v1/auth/token?guild_id=123456789
+Content-Type: application/json
+```
+
+### Implementation Pattern
+
+Requests must include the token in the Authorization header:
+
+```bash
+curl -X GET \
+  -H "Authorization: ${TOKEN}" \
+  -H "Content-Type: application/json" \
+  https://core.ermbot.xyz/api/v1/shifts
+```
+
+## Response Schema
+
+The API implements a normalized response envelope pattern:
+
+```typescript
+interface ResponseEnvelope<T> {
+  data: T[];              // Resource collection
+  pagination: {
+    next_cursor: number;  // Temporal cursor position
+    limit: number;        // Result set boundary
+    has_more: boolean;    // Collection continuation flag
+  }
+}
+```
+
+## Cursor-Based Pagination Implementation
+
+The API implements resource-specific pagination mechanisms:
+
+### Resource-Specific Cursor Types
+
+#### Shifts
+- Type: Unix Timestamp (float)
+- Format: Base-10 decimal timestamp
+- Example: `1736302471.07677`
+- Usage: Time-based ordering of shift records
+
+#### Moderations
+- Type: Discord Snowflake (int64)
+- Format: Discord-generated unique ID
+- Example: `1090340521350131742`
+- Usage: Discord event sequencing
+
+#### Leaves
+- Type: Unix Epoch (int64)
+- Format: Seconds since Unix epoch
+- Example: `1702544876`
+- Usage: Chronological ordering of leave records
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `after` | Varies | Cursor position (see resource type) |
+| `limit` | `integer` | Result set size constraint |
+
+### Implementation Examples
+
+```bash
+# Shifts - Unix timestamp cursor
+GET /api/v1/shifts?after=1736302471.07677&limit=50
+
+# Moderations - Snowflake cursor
+GET /api/v1/moderations?after=1090340521350131742&limit=50
+
+# Leaves - Epoch timestamp cursor
+GET /api/v1/leaves?after=1702544876&limit=50
+```
+
+## Error Handling
+
+When an error occurs, you'll receive:
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+{
+  "status": 400,
+  "message": "Error description",
+  "error_code": "ERROR_TYPE"
+}
 ```
