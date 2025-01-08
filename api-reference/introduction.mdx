@@ -9,15 +9,6 @@ The ERM API implements uses RESTful principles to provide consistent, basic data
 
 The API implements stateless authentication using cryptographically secure tokens.
 
-### Token Generation Protocol
-
-Initialize an authentication context by providing a guild identifier:
-
-```bash
-POST /api/v1/auth/token?guild_id=123456789
-Content-Type: application/json
-```
-
 ### Implementation Pattern
 
 Requests must include the token in the Authorization header:
