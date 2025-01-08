@@ -455,6 +455,17 @@
     }
   },
   "components": {
+    "parameters": {
+      "guildHeader": {
+        "name": "guild",
+        "in": "header",
+        "required": true,
+        "description": "Discord Guild ID",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
     "schemas": {
       "ShiftResponse": {
         "type": "object",
@@ -676,22 +687,21 @@
     },
     "securitySchemes": {
       "ApiKeyAuth": {
-      "type": "apiKey",
-      "in": "header", 
-      "name": "Authorization"
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization"
       },
       "GuildAuth": {
-      "type": "guildId",
-      "in": "header",
-      "name": "Guild"
+        "type": "apiKey",
+        "in": "header",
+        "name": "Guild"
       }
     }
   },
   "security": [
-  {
-    "ApiKeyAuth": [],
-    "GuildAuth": []
-  }
-]
-
+    {
+      "ApiKeyAuth": [],
+      "GuildAuth": []
+    }
+  ]
 }
