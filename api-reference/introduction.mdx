@@ -11,11 +11,12 @@ The API implements stateless authentication using cryptographically secure token
 
 ### Implementation Pattern
 
-Requests must include the token in the Authorization header:
+Requests must include the token in the Authorization header and the Guild in the Guild header:
 
 ```bash
 curl -X GET \
   -H "Authorization: ${TOKEN}" \
+  -H "Guild: $GUILD_ID" \
   -H "Content-Type: application/json" \
   https://core.ermbot.xyz/api/v1/shifts
 ```
